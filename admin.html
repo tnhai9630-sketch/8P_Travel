@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản trị đặt chỗ</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .booking { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; }
+    button { padding: 5px 10px; margin-top: 5px; }
+  </style>
+</head>
+<body>
+  <h2>Quản lý đặt chỗ</h2>
+  <div id="admin-list"></div>
+
+  <script>
+    function loadBookings() {
+      const bookings = JSON.parse(localStorage.getItem("bookings")) || [];
+      const list = document.getElementById("admin-list");
+      list.innerHTML = "";
+
+      if (bookings.length === 0) {
+        list.innerHTML = "<p>Chưa có đặt chỗ nào.</p>";
+        return;
+      }
+
+      bookings.forEach((b, index) => {
+        const div = document.createElement("div");
+        div.className = "booking";
+        div.innerHTML = `
+          <p><b>Mã đặt chỗ:</b> ${b.code}</p>
+          <p><b>Khách sạn:</b> ${b.hotel}</p>
+          <p><b>Tổng tiền:</b> ${Number(b.total).toLocaleString("vi-VN")}đ</p>
+          <p><b>Trạng thái:</b> <span class="status">${b.status}</span></p>
+          ${b.status === "Chờ thanh toán" ? `<button onclick="confirmPayment(${index})">Xác nhận thanh toán</button>` : ""}
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function confirmPayment(index) {
+      let bookings = JSON.parse(localStorage.getItem("bookings")) || [];
+      bookings[index].status = "Đã thanh toán";
+      localStorage.setItem("bookings", JSON.stringify(bookings));
+      alert("Đã xác nhận thanh toán!");
+      loadBookings();
+    }
+
+    loadBookings();
+  </script>
+</body>
+</html>

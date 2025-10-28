@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản lý đơn đặt phòng - 8P Travel Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+#messageBox {
+    position: fixed;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1rem 2rem;
+    border-radius: 0.75rem;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    pointer-events: none;
+}
+#messageBox.success { background-color: #10B981; }
+#messageBox.error { background-color: #EF4444; }
+#messageBox.visible { opacity: 1; pointer-events: auto; }
+button.statusBtn { background-color: #3B82F6; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; cursor: pointer; }
+button.statusBtn:hover { background-color: #2563EB; }
+</style>
+</head>
+<body class="bg-slate-50">
+
+<header class="bg-white shadow-sm py-4">
+    <div class="container mx-auto flex justify-between items-center px-4">
+        <div class="flex items-center space-x-2">
+            <img src="assets/Layer_1.png" alt="8P Travel Logo" class="h-10 w-10">
+            <span class="text-2xl font-bold text-gray-800">8P Travel - Admin</span>
+        </div>
+    </div>
+</header>
+
+<main class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">Quản lý đơn đặt phòng</h1>
+
+    <!-- Bộ lọc -->
+    <div class="flex flex-wrap gap-4 mb-6">
+        <select id="filterSource" class="border rounded px-3 py-2">
+            <option value="all">Tất cả nguồn</option>
+            <option value="bank">Bank</option>
+            <option value="momo">MoMo</option>
+            <option value="paypal">PayPal</option>
+        </select>
+
+        <select id="filterStatus" class="border rounded px-3 py-2">
+            <option value="all">Tất cả trạng thái</option>
+            <option value="Chờ thanh toán">Chờ thanh toán</option>
+            <option value="Đã thanh toán">Đã thanh toán</option>
+            <option value="Thanh toán PayPal thất bại">Thanh toán thất bại</option>
+        </select>
+
+        <input id="searchInput" type="text" placeholder="Tìm theo mã đơn, khách sạn, họ tên..."
+            class="flex-1 border rounded px-3 py-2"/>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
+        <table class="w-full text-left table-auto border-collapse">
+            <thead>
+                <tr class="bg-blue-600 text-white text-center font-semibold">                    
+                    <th class="px-4 py-2 ">Mã đơn</th>
+                    <th class="px-4 py-2 ">Khách sạn</th>
+                    <th class="px-4 py-2 ">Check-in</th>
+                    <th class="px-4 py-2 ">Check-out</th>
+                    <th class="px-4 py-2 ">Khách</th>
+                    <th class="px-4 py-2 ">Họ tên</th>
+                    <th class="px-4 py-2 ">Trạng thái</th>
+                    <th class="px-4 py-2 ">Thời gian đặt</th>
+                    <th class="px-4 py-2 ">Hành động</th>
+                    <th class="px-4 py-2 ">Nguồn</th>
+                </tr>
+            </thead>
+            <tbody id="booking-list"></tbody>
+        </table>
+        <div id="noBookingsMessage" class="text-center text-gray-500 py-8 hidden">
+            Chưa có đơn đặt nào.
+        </div>
+    </div>
+</main>
+
+<div id="messageBox" class="rounded-lg"></div>
+
+<script>
+const messageBox = document.getElementById('messageBox');
+
+// Hiển thị thông báo
+function showMessage(message, type) {
+    messageBox.textContent = message;
+    messageBox.className = `rounded-lg visible ${type}`;
+    setTimeout(() => { messageBox.className = `rounded-lg ${type}`; }, 3000);
+}
+
+// Xác định nguồn thanh toán tự động
+function autoDetectSource(bookings) {
+    bookings.forEach(b => {
+        const code = (b.code || "").toUpperCase();
+        if (!b.source || !["bank", "momo", "paypal"].includes(b.source?.toLowerCase())) {
+            if (code.startsWith("BOOKM")) b.source = "MoMo";
+            else if (code.startsWith("BOOKP")) b.source = "PayPal";
+            else b.source = "Bank";
+        }
+    });
+    return bookings;
+}
+
+// Lấy tất cả bookings từ server + localStorage và hợp nhất
+async function loadAllBookings() {
+    let localBookings = JSON.parse(localStorage.getItem("bookings")) || [];
+    localBookings = autoDetectSource(localBookings);
+
+    let serverBookings = [];
+    let serverFailed = false;
+
+    try {
+        const res = await fetch("http://localhost:3000/bookings-client");
+        if (res.ok) {
+            serverBookings = await res.json();
+            autoDetectSource(serverBookings);
+        }
+    } catch (err) {
+        console.error("Lỗi tải bookings từ server:", err);
+        serverFailed = true;
+    
+    }
+    // Hợp nhất, ưu tiên dữ liệu server
+    const combinedMap = new Map();
+    localBookings.forEach(b => { if(b.code) combinedMap.set(b.code, b); });
+    serverBookings.forEach(b => { if(b.code) combinedMap.set(b.code, b); });
+
+    const allBookings = Array.from(combinedMap.values());
+    allBookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+     if(serverFailed && allBookings.length===0){
+        showMessage("Không thể tải dữ liệu từ máy chủ và không có dữ liệu cục bộ.", "error");
+    }
+    return allBookings;
+}
+
+// Tạo 1 hàng trong bảng
+function addRow(booking, index) {
+    const tbody = document.getElementById("booking-list");
+    let statusClass = "text-gray-600";
+    if (booking.status === "Đã thanh toán") statusClass = "text-green-600 font-semibold";
+    if (booking.status === "Chờ thanh toán") statusClass = "text-pink-600 font-semibold";
+    if (booking.status === "Thanh toán PayPal thất bại") statusClass = "text-red-600 font-semibold";
+
+    const tr = document.createElement("tr");
+    tr.classList.add("border-t", "border-gray-200", "hover:bg-gray-50");
+    tr.innerHTML = `
+        <td class="px-4 py-3 text-center">${booking.code || "--"}</td>
+        <td class="px-4 py-3 text-center">${booking.hotel || "--"}</td>
+        <td class="px-4 py-3 text-center">${booking.checkIn || "--"}</td>
+        <td class="px-4 py-3 text-center">${booking.checkOut || "--"}</td>
+        <td class="px-4 py-3 text-center">${booking.guests || "--"}</td>
+        <td class="px-4 py-3 text-center">${booking.fullname || "--"}</td>
+        <td class="px-4 py-3 ${statusClass} text-center">${booking.status || "--"}</td>
+        <td class="px-4 py-3 text-center">${booking.createdAt || "--"}</td>
+        <td class="px-4 py-3 text-center">
+            ${booking.status === "Chờ thanh toán" 
+                ? `<button class="statusBtn" onclick="confirmPayment(${index})">Xác nhận thanh toán</button>` 
+                : `<span class="text-green-600 font-semibold">Đã thanh toán</span>`}
+        </td>
+        <td class="px-4 py-3 text-center">${booking.source || "--"}</td>
+    `;
+    tbody.appendChild(tr);
+}
+
+// Render bảng với filter + search
+function renderBookings() {
+    const tbody = document.getElementById("booking-list");
+    const noBookingsMessage = document.getElementById("noBookingsMessage");
+    tbody.innerHTML = "";
+
+    const filterSource = document.getElementById("filterSource").value.toLowerCase();
+    const filterStatus = document.getElementById("filterStatus").value.toLowerCase();
+    const searchKeyword = document.getElementById("searchInput").value.trim().toLowerCase();
+
+    let filteredBookings = window.allBookings.filter(b => {
+        const source = (b.source || "").toLowerCase();
+        const status = (b.status || "").toLowerCase();
+        const matchSource = filterSource === "all" || source === filterSource;
+        const matchStatus = filterStatus === "all" || status === filterStatus;
+        const matchSearch = searchKeyword === "" ||
+            (b.code || "").toLowerCase().includes(searchKeyword) ||
+            (b.hotel || "").toLowerCase().includes(searchKeyword) ||
+            (b.fullname || "").toLowerCase().includes(searchKeyword);
+        return matchSource && matchStatus && matchSearch;
+    });
+
+    if (filteredBookings.length === 0) {
+        noBookingsMessage.classList.remove("hidden");
+        return;
+    } else {
+        noBookingsMessage.classList.add("hidden");
+    }
+
+    filteredBookings.forEach((b, index) => addRow(b, index));
+}
+
+// Xác nhận thanh toán
+function confirmPayment(index){
+    const booking = window.allBookings[index];
+    if(booking.status === "Chờ thanh toán") {
+        booking.status = "Đã thanh toán";
+        // Cập nhật localStorage nếu là Bank
+        let localBookings = JSON.parse(localStorage.getItem("bookings")) || [];
+        const localIndex = localBookings.findIndex(b => b.code === booking.code);
+        if(localIndex !== -1) localBookings[localIndex].status = "Đã thanh toán";
+        localStorage.setItem("bookings", JSON.stringify(localBookings));
+
+// --- THÊM LOGIC THÔNG BÁO ---
+        // Lấy danh sách notifications từ localStorage (mỗi user)
+        let notifications = JSON.parse(localStorage.getItem("notifications")) || [];
+        notifications.push({
+            code: booking.code,
+            hotel: booking.hotel,
+            fullname: booking.fullname,
+            message: `Đơn ${booking.code} đã được xác nhận`,
+            createdAt: new Date().toISOString()
+        });
+        localStorage.setItem("notifications", JSON.stringify(notifications));
+        // Sử dụng storage event để các tab index.html khác nhận
+        window.dispatchEvent(new Event('storage'));
+
+        renderBookings();
+        showMessage("Đơn đã được đánh dấu là Đã thanh toán", "success");
+    }
+}
+
+// Khởi tạo
+document.addEventListener('DOMContentLoaded', async () => {
+    window.allBookings = await loadAllBookings();
+    renderBookings();
+
+    document.getElementById("filterSource").addEventListener("change", renderBookings);
+    document.getElementById("filterStatus").addEventListener("change", renderBookings);
+    document.getElementById("searchInput").addEventListener("input", renderBookings);
+
+    window.addEventListener('storage', async (event) => {
+        if(event.key === 'bookings'){
+            window.allBookings = await loadAllBookings();
+            renderBookings();
+            showMessage('Trạng thái đơn đã được cập nhật', 'success');
+        }
+    });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thanh toán - 8P Travel</title>
+<style>
+body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
+.checkout { max-width: 500px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.1); }
+.checkout-section { margin-bottom: 20px; }
+label { display:block; margin-top:10px; }
+input[type="text"], input[type="email"], input[type="tel"], select {
+    width:100%; padding:8px; margin-top:5px; border-radius:5px; border:1px solid #ccc;
+}
+.btn { background:#28a745; color:white; padding:10px 15px; border:none; border-radius:5px; cursor:pointer; width:100%; margin-top:15px;}
+#bank-qr img { margin-top:10px; }
+.checkout-section h2 { color: #007BFF; font-size: 18px; margin-bottom: 10px;}
+.checkout-section h2::before { content: attr(data-step) ". "; font-weight: bold; margin-right: 5px;}
+</style>
+</head>
+<body>
+
+<div class="checkout">
+<h1>Thanh toán đặt phòng</h1>
+
+<form id="paymentForm">
+
+<section class="checkout-section">
+<h2 data-step="1">Thông tin khách hàng</h2>
+<label>Họ và tên</label>
+<input type="text" name="fullname" required>
+<label>Email</label>
+<input type="email" name="email" required>
+<label>Số điện thoại</label>
+<input type="tel" name="phone" required>
+</section>
+
+<section class="checkout-section">
+<h2 data-step="2">Thông tin đặt phòng</h2>
+<p>Khách sạn: <strong id="hotel-name">--</strong></p>
+<p>Ngày nhận phòng: <span id="checkin-date">--/--/----</span></p>
+<p>Ngày trả phòng: <span id="checkout-date">--/--/----</span></p>
+<p>Số khách: <span id="guest-count">--</span></p>
+<p>Số đêm: <span id="night-count">0</span></p>
+<p>Tổng tiền: <strong id="total-price">0đ</strong></p>
+</section>
+
+<section class="checkout-section">
+<h2 data-step="3">Phương thức thanh toán</h2>
+<label><input type="radio" name="payment" value="momo" required> Ví MoMo</label>
+<label><input type="radio" name="payment" value="paypal"> Paypal</label>
+<label><input type="radio" name="payment" value="bank"> Thẻ ngân hàng (QR)</label>
+
+<div id="bank-qr" style="display:none; margin-top:20px; text-align:center;">
+<h3>Quét mã QR để thanh toán</h3>
+<img id="qr-code" src="" width="250" alt="QR Thanh toán">
+<p><small>Sử dụng ứng dụng ngân hàng để quét mã</small></p>
+</div>
+
+<div id="momo-status" style="display:none; margin-top:20px; text-align:center;">
+<h3>Đang chuyển sang cổng thanh toán...</h3>
+<p id="status"><small>Vui lòng chờ trong giây lát</small></p>
+</div>
+<!-- ✅ Thêm phần hiển thị trạng thái redirect PayPal -->
+<div id="redirect-status" style="display:none; margin-top:20px; text-align:center;">
+<h3>Đang chuyển sang PayPal...</h3>
+<p id="status-message"><small>Vui lòng chờ trong giây lát...</small></p>
+</div>
+</section>
+
+<button type="submit" class="btn">Xác nhận thanh toán</button>
+</form>
+</div>
+
+<script>
+// Lấy dữ liệu từ localStorage
+const hotel    = localStorage.getItem("hotelName") || "Chưa chọn";
+const checkin  = localStorage.getItem("checkin")  || "--/--/----";
+const checkout = localStorage.getItem("checkout") || "--/--/----";
+const guests   = localStorage.getItem("guests")   || "--";
+const nights   = localStorage.getItem("nights")   || "0";
+const total    = parseInt(localStorage.getItem("total") || "0");
+
+document.getElementById("hotel-name").textContent   = hotel;
+document.getElementById("checkin-date").textContent = checkin;
+document.getElementById("checkout-date").textContent= checkout;
+document.getElementById("guest-count").textContent  = guests;
+document.getElementById("night-count").textContent  = nights;
+document.getElementById("total-price").textContent = total.toLocaleString("vi-VN")+"đ";
+
+// Bank QR
+const bankId = "970407"; 
+const accountNo = "19050921741012";
+const accountName = "TRAN THI NHAI";  
+const addInfo = "Thanh toan dat phong KS";
+const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact.png?amount=${total}&addInfo=${encodeURIComponent(addInfo)}&accountName=${encodeURIComponent(accountName)}`;
+
+document.querySelectorAll('input[name="payment"]').forEach(r => {
+    r.addEventListener('change', () => {
+        document.getElementById("bank-qr").style.display = r.value==="bank" ? "block" : "none";
+        document.getElementById("qr-code").src = r.value==="bank" ? qrUrl : "";
+        
+        // Ẩn các thông báo khác khi đổi phương thức
+        document.getElementById("momo-status").style.display = "none";
+        document.getElementById("redirect-status").style.display = "none";
+        const confirmBankBtn = document.getElementById("confirm-bank");
+        if(confirmBankBtn) confirmBankBtn.style.display = "none";
+        document.querySelector('.btn').style.display = "block"; 
+        document.querySelector('.btn').disabled = false;
+    });
+});
+
+// ✅ CHỈNH SỬA HÀM TẠO CODE: Đảm bảo tạo mã mới nếu user đổi phương thức
+function generateBookingCode(paymentType="Bank"){
+    const prefix = paymentType === "MoMo" ? "BOOKM" : paymentType === "PayPal" ? "BOOKP" : "BOOKB";
+    let code = localStorage.getItem("currentBookingCode");
+    
+    // Nếu chưa có code HOẶC code không khớp với prefix (user đổi phương thức)
+    if (!code || !code.startsWith(prefix)){
+        const today = new Date();
+        const date = today.toISOString().slice(0,10).replace(/-/g,""); // YYYYMMDD
+        const random = Math.floor(10000 + Math.random() * 90000); // 5 chữ số ngẫu nhiên
+        code = `${prefix}-${date}-${random}`;
+        localStorage.setItem("currentBookingCode", code);
+    }
+    return code;
+}
+
+document.getElementById("paymentForm").addEventListener("submit", function(e){
+    e.preventDefault();
+
+    const selected = document.querySelector('input[name="payment"]:checked');
+    const payment = selected ? selected.value : null;
+    if (!payment) {
+        alert("Vui lòng chọn phương thức thanh toán!");
+        return;
+    }
+    
+    // Xác định tên phương thức chuẩn để lưu
+    const methodDisplay = payment === "momo" ? "MoMo" : payment === "paypal" ? "PayPal" : "Bank";
+
+    // ✅ TẠO ĐỐI TƯỢNG BOOKING ĐẦY ĐỦ THÔNG TIN
+    const booking = {
+        code: generateBookingCode(methodDisplay), // ✅ Đảm bảo code đúng loại
+        hotel: hotel,
+        checkIn: checkin, 
+        checkOut: checkout,
+        guests: guests,
+        fullname: document.querySelector('input[name="fullname"]').value,
+        phone: document.querySelector('input[name="phone"]').value,
+        total: total,
+        method: methodDisplay,
+        status: payment==="bank" ? "Chờ thanh toán" : "Đang xử lý...", 
+        createdAt: new Date().toLocaleString("vi-VN")
+    };
+    
+    // ✅ BƯỚC QUAN TRỌNG: Lưu đơn hàng hiện tại vào currentBooking trước khi gọi API/chuyển hướng
+    localStorage.setItem("currentBooking", JSON.stringify(booking));
+    localStorage.setItem("paymentMethod", methodDisplay); 
+
+    const submitButton = document.querySelector('.btn');
+    const redirectStatus = document.getElementById("redirect-status");
+    const momoStatus = document.getElementById("momo-status");
+    
+    // --- XỬ LÝ THANH TOÁN PAYPAL ---
+    if (payment === "paypal") {
+        redirectStatus.style.display = "block";
+        document.getElementById("status-message").textContent = "Đang chuyển sang cổng thanh toán PayPal...";
+        submitButton.disabled = true;
+
+        const apiUrl = "http://localhost:4000/create-paypal-order";
+
+        fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                total: total, 
+                currency: "USD",
+                description: `Thanh toan dat phong: ${hotel}`
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.link) {
+                // Thêm vào danh sách bookings (với status "Đang xử lý...")
+                let bookingsLocal = JSON.parse(localStorage.getItem("bookings")) || [];
+                bookingsLocal.push(booking);
+                localStorage.setItem("bookings", JSON.stringify(bookingsLocal));
+                
+                // Trước khi đi, lưu flag để biết là thanh toán PayPal
+                localStorage.setItem("paypalRedirect", "true");
+                window.open(data.link, "_blank");
+
+                // Hiển thị hướng dẫn
+                alert("Vui lòng hoàn tất thanh toán PayPal trong cửa sổ mới. Sau khi xong, quay lại đây để xem xác nhận.");
+                window.location.href = "xac-nhan-thanh-toan.html?source=paypal";
+            } else {
+                alert("Không thể tạo liên kết thanh toán PayPal. Vui lòng thử lại.");
+                console.error("Server response:", data);
+                submitButton.disabled = false;
+                redirectStatus.style.display = "none";
+            }
+        })
+        .catch(err => {
+            console.error("Lỗi kết nối PayPal:", err);
+            alert("Không kết nối được tới server PayPal (http://localhost:4000).");
+            submitButton.disabled = false;
+            redirectStatus.style.display = "none";
+        });
+    } 
+    
+    // --- XỬ LÝ THANH TOÁN BANK (QR) ---
+    else if (payment === "bank"){
+        // Hiển thị QR và ẩn nút Submit chính
+        document.getElementById("bank-qr").style.display="block";
+        document.getElementById("qr-code").src = qrUrl;
+        submitButton.style.display = "none"; 
+
+        // Kiểm tra và tạo nút "Tôi đã chuyển tiền" nếu chưa có
+        let confirmBtn = document.getElementById("confirm-bank");
+        if(!confirmBtn){
+            confirmBtn = document.createElement("button");
+            confirmBtn.id = "confirm-bank";
+            confirmBtn.textContent = "Tôi đã chuyển tiền và xác nhận";
+            confirmBtn.className = "btn";
+            document.getElementById("bank-qr").appendChild(confirmBtn);
+        } else {
+             confirmBtn.style.display = "block";
+        }
+        
+        // Loại bỏ listener cũ và thêm listener mới
+        confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+        confirmBtn = document.getElementById("confirm-bank"); // Lấy lại element sau khi clone
+
+        confirmBtn.addEventListener("click", ()=>{
+            // Thêm vào danh sách bookings (chỉ thêm nếu chưa có)
+            let bookingsLocal = JSON.parse(localStorage.getItem("bookings"))||[];
+            if(!bookingsLocal.some(b=>b.code===booking.code)){ 
+                 bookingsLocal.push(booking);
+                 localStorage.setItem("bookings",JSON.stringify(bookingsLocal));
+            }
+
+            // Chuyển hướng đến trang xác nhận
+           window.location.href = "xac-nhan-thanh-toan.html?source=bank";
+        }) 
+    } 
+    
+    // --- XỬ LÝ THANH TOÁN MOMO ---
+    else if (payment === "momo") { 
+        momoStatus.style.display = "block";
+        document.getElementById("status").textContent = "Vui lòng chờ trong giây lát...";
+        submitButton.disabled = true;
+
+        const apiUrl = "http://localhost:3000/create-momo";
+
+        fetch(apiUrl,{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({hotel,total,fullname:booking.fullname,phone:booking.phone})
+        })
+        .then(res=>res.json())
+        .then(data=>{
+            if(data.payUrl){ 
+                // Thêm vào danh sách bookings (với status "Đang xử lý...")
+                let bookingsLocal = JSON.parse(localStorage.getItem("bookings")) || [];
+                bookingsLocal.push(booking);
+                localStorage.setItem("bookings", JSON.stringify(bookingsLocal));
+
+                localStorage.setItem("momoRedirect", "true");
+                window.open(data.payUrl, "_blank");
+                alert("Vui lòng hoàn tất thanh toán MoMo trong cửa sổ mới. Sau khi xong, quay lại đây để xem xác nhận.");
+                window.location.href = "xac-nhan-thanh-toan.html?source=momo"; 
+            } else { 
+                alert("Không tạo được đơn " + payment.toUpperCase()); 
+                console.error("Server trả về:", data);
+                submitButton.disabled = false;
+            }
+        })
+        .catch(err=>{
+            console.error("Lỗi kết nối:", err);
+            alert("Không kết nối được tới server " + payment.toUpperCase() + " (http://localhost:3000)");
+            submitButton.disabled = false;
+        });
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kết quả thanh toán - 8P Travel</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.container {
+  background: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+h1 {
+  margin-bottom: 20px;
+}
+.success {
+  color: #28a745;
+}
+.fail {
+  color: #dc3545;
+}
+.loader {
+  margin: 20px auto;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #007BFF;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg);}
+  100% { transform: rotate(360deg);}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1 id="resultTitle">Đang xử lý giao dịch...</h1>
+  <div class="loader"></div>
+  <p id="resultMsg">Vui lòng chờ trong giây lát...</p>
+</div>
+
+<script>
+  function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+  }
+
+  const status = getQueryParam("status");
+  const titleEl = document.getElementById("resultTitle");
+  const msgEl = document.getElementById("resultMsg");
+
+  if (status === "success") {
+    titleEl.textContent = "Thanh toán thành công ✅";
+    titleEl.classList.add("success");
+    msgEl.textContent = "Bạn sẽ được chuyển sang trang xác nhận trong giây lát...";
+    setTimeout(()=>{
+      window.location.href = "xac-nhan-thanh-toan.html";
+    }, 3000);
+  } else if (status === "fail") {
+    titleEl.textContent = "Thanh toán thất bại ❌";
+    titleEl.classList.add("fail");
+    msgEl.textContent = "Vui lòng thử lại hoặc liên hệ hỗ trợ.";
+    setTimeout(()=>{
+      window.location.href = "xac-nhan-thanh-toan.html";
+    }, 5000);
+  }
+</script>
+</body>
+</html>
+

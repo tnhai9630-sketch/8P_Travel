@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thông báo - 8P Travel</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+.notification-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 18px;
+    height: 18px;
+    background-color: #EF4444; /* đỏ nổi bật */
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 9999px; /* tròn */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 5px;
+    border: 1px solid white;
+}
+</style>
+</head>
+<body class="bg-slate-50">
+
+<!-- Header -->
+<header class="bg-white shadow-sm py-4">
+    <div class="container mx-auto flex justify-between items-center px-4">
+        <div class="flex items-center space-x-2">
+            <img src="assets/Layer_1.png" alt="8P Travel Logo" class="h-10 w-10">
+            <span class="text-2xl font-bold text-gray-800">8P Travel</span>
+        </div>
+        <nav>
+            <ul class="flex items-center space-x-6 relative">
+                <li><a href="index.html" class="text-gray-600 hover:text-blue-600 transition-colors">Trang chủ</a></li>
+                <li class="relative">
+                    <a href="thong-bao.html" class="text-gray-600 hover:text-blue-600 transition-colors flex items-center">
+                        Thông báo
+                        <span id="notifBadge" class="notification-badge hidden"></span>
+                    </a>
+                </li>
+                <li><a href="bookings.html" class="text-gray-600 hover:text-blue-600 transition-colors">Chỗ đã đặt</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<!-- Main -->
+<main class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Thông báo của bạn</h1>
+
+    <div id="notificationsContainer" class="grid gap-4">
+        <!-- Thông báo sẽ được render ở đây -->
+    </div>
+
+    <div id="noNotifications" class="text-gray-500 text-center py-12 hidden">
+        Bạn chưa có thông báo mới.
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="bg-gray-800 text-gray-300 py-8">
+        <div class="container mx-auto px-4 flex flex-col items-center text-center">
+            <div class="mb-4">
+                <h3 class="text-xl font-bold mb-2">8P Travel</h3>
+                <p class="text-sm">Trải nghiệm du lịch đẳng cấp, dễ dàng và đáng nhớ.</p>
+            </div>
+            <div class="flex flex-wrap justify-center space-x-6 mb-4">
+                <a href="#" class="hover:text-white transition-colors">Về chúng tôi</a>
+                <a href="#" class="hover:text-white transition-colors">Dịch vụ</a>
+                <a href="#" class="hover:text-white transition-colors">Liên hệ</a>
+                <a href="#" class="hover:text-white transition-colors">Chính sách bảo mật</a>
+            </div>
+            <div class="flex space-x-4 text-2xl mb-4">
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-facebook-square"></i></a>
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-instagram-square"></i></a>
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-twitter-square"></i></a>
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-linkedin"></i></a>
+            </div>
+            <p class="text-sm">&copy; 2024 8P Travel. All rights reserved.</p>
+        </div>
+    </footer>
+
+<script>
+function updateNotifBadge() {
+    const badge = document.getElementById("notifBadge");
+    let notifications = JSON.parse(localStorage.getItem("notifications")) || [];
+    // chỉ đếm thông báo chưa đọc
+    const unreadCount = notifications.filter(n => !n.read).length;
+     if (unreadCount === 0) {
+        badge.classList.add("hidden");
+    } else {
+        badge.textContent = unreadCount; // 🔥 sửa chỗ này
+        badge.classList.remove("hidden");
+    }
+}
+
+function loadNotifications() {
+    const container = document.getElementById("notificationsContainer");
+    const noNotif = document.getElementById("noNotifications");
+    container.innerHTML = "";
+
+    let notifications = JSON.parse(localStorage.getItem("notifications")) || [];
+
+    if(notifications.length === 0){
+        noNotif.classList.remove("hidden");
+    } else {
+        noNotif.classList.add("hidden");
+    }
+
+    notifications.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    notifications.forEach((n, i) => {
+        const card = document.createElement("div");
+        card.className = "bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow relative";
+        card.innerHTML = `
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-800 mb-1">Đơn ${n.code} - ${n.hotel}</h2>
+                    <p class="text-gray-600 mb-1">Khách hàng: <span class="font-medium">${n.fullname}</span></p>
+                    <p class="text-gray-500 text-sm">${new Date(n.createdAt).toLocaleString()}</p>
+                </div>
+                <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">Đã xác nhận</span>
+            </div>
+            <p class="mt-3 text-gray-700">${n.message}</p>
+        `;
+        container.appendChild(card);
+    });
+     // đánh dấu tất cả thông báo là đã đọc
+    notifications = notifications.map(n => ({ ...n, read: true }));
+    localStorage.setItem("notifications", JSON.stringify(notifications));
+
+    updateNotifBadge(); // cập nhật badge sau khi render
+}
+
+// Khi có update từ localStorage khác tab
+window.addEventListener('storage', (event) => {
+    if(event.key === 'notifications'){
+        loadNotifications();
+    }
+});
+
+// Khởi tạo khi load trang
+document.addEventListener('DOMContentLoaded', loadNotifications);
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Địa điểm đã lưu - 8P Travel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50">
+
+<header class="bg-white shadow-sm py-4">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <div class="flex items-center space-x-2">
+                <img src="assets/Layer_1.png" alt="8P Travel Logo" class="h-10 w-10">
+                <span class="text-2xl font-bold text-gray-800">8P Travel</span>
+            </div>
+            <nav>
+                <ul class="flex items-center space-x-6">
+                    <li><a href="index.html" class="text-gray-600 hover:text-blue-600 transition-colors">Trang chủ</a></li>
+                    <li><a href="hotel-list.html" class="text-gray-600 hover:text-blue-600 transition-colors">Khách sạn</a></li>
+                    <li class="dropdown relative">
+                    <a href="#" id="userMenu" class="dropbtn text-gray-600 hover:text-blue-600 transition-colors flex items-center">
+                         Khách hàng <i class="fas fa-user ml-2"></i>
+                    </a>                        <div class="dropdown-content absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-20">
+                            <a href="saved-places.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Địa điểm đã lưu</a>
+                            <a href="bookings.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Chỗ đã đặt</a>
+                            <a href="trips.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Chuyến đi</a>
+                            <a href="#" id="logoutBtn" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hidden">Đăng xuất</a>
+                        </div>
+                    </li>
+                    <li><a href="#" id="loginBtn" class="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-colors">Đăng nhập</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+  <main class="container mx-auto px-4 py-12">
+    <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Địa điểm đã lưu</h2>
+    <div id="savedHotelsContainer" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Các khách sạn đã lưu sẽ render vào đây -->
+    </div>
+    <p id="noSavedMsg" class="text-center text-gray-500 hidden">Bạn chưa lưu khách sạn nào.</p>
+  </main>
+
+  <footer class="bg-gray-800 text-gray-300 py-8 mt-12">
+        <div class="container mx-auto px-4 flex flex-col items-center text-center">
+            <div class="mb-4">
+                <h3 class="text-xl font-bold mb-2">8P Travel</h3>
+                <p class="text-sm">Trải nghiệm du lịch đẳng cấp, dễ dàng và đáng nhớ.</p>
+            </div>
+            <div class="flex flex-wrap justify-center space-x-6 mb-4">
+                <a href="#" class="hover:text-white transition-colors">Về chúng tôi</a>
+                <a href="#" class="hover:text-white transition-colors">Dịch vụ</a>
+                <a href="#" class="hover:text-white transition-colors">Liên hệ</a>
+                <a href="#" class="hover:text-white transition-colors">Chính sách bảo mật</a>
+            </div>
+            <div class="flex space-x-4 text-2xl mb-4">
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-facebook-square"></i></a>
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-instagram-square"></i></a>
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-twitter-square"></i></a>
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-linkedin"></i></a>
+            </div>
+            <p class="text-sm">&copy; 2024 8P Travel. All rights reserved.</p>
+        </div>
+    </footer>
+
+  <script>
+    // Lấy danh sách đã lưu
+    const savedHotelsKey = 'saved_hotels';
+    function getSavedHotels() {
+      try {
+        return JSON.parse(localStorage.getItem(savedHotelsKey)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    // Danh sách dữ liệu khách sạn (tạm hardcode giống index.html)
+    const hotelsData = {
+      "mashpi-lodge": {
+        name: "Mashpi Lodge",
+        location: "Quito, Ecuador",
+        price: "10.890.000 VND",
+        rating: "9.0",
+        reviews: "276 đánh giá",
+        img: "assets/Mashpi Lodge.png"
+      },
+      "salana-boutique-hotel": {
+        name: "Salana Boutique Hotel",
+        location: "Vientiane, Lào",
+        price: "6.359.000 VND",
+        rating: "8.0",
+        reviews: "372 đánh giá",
+        img: "assets/Salana Boutique Hotel (2).png"
+      },
+      "nysa-hotel-bangkok": {
+        name: "NYSA HOTEL BANGKOK",
+        location: "Bangkok, Thái Lan",
+        price: "2.968.000 VND",
+        rating: "8.9",
+        reviews: "276 đánh giá",
+        img: "assets/NYSA HOTEL BANGKOK.png"
+      },
+      "seaside-palm-beach": {
+        name: "Seaside Palm Beach Hotel",
+        location: "Las Palmas, Tây Ban Nha",
+        price: "1.635.000 VND",
+        rating: "7.8",
+        reviews: "276 đánh giá",
+        img: "assets/Seaside Palm Beach.png"
+      },
+      "la-siesta-saigon": {
+        name: "La Siesta Premium Saigon Central",
+        location: "Quận 1, TP. Hồ Chí Minh, Việt Nam",
+        price: "4.197.000 VND",
+        rating: "9.4",
+        reviews: "1.095 đánh giá",
+        img: "assets/La Siesta Premium Saigon Central.png"
+      },
+      "lsignature-hotel-spa": {
+        name: "L'Signature Hotel & Spa",
+        location: "Quận Hoàn Kiếm, Hà Nội, Việt Nam",
+        price: "5.461.000 VND",
+        rating: "9.7",
+        reviews: "1.890 đánh giá",
+        img: "assets/L'Signature Hotel & Spa.png"
+      },
+    };
+
+    function renderSavedHotels() {
+      const savedHotels = getSavedHotels();
+      const container = document.getElementById("savedHotelsContainer");
+      const noSavedMsg = document.getElementById("noSavedMsg");
+
+      if (savedHotels.length === 0) {
+        noSavedMsg.classList.remove("hidden");
+        container.innerHTML = "";
+        return;
+      }
+
+      noSavedMsg.classList.add("hidden");
+      container.innerHTML = "";
+
+      savedHotels.forEach(id => {
+        if (hotelsData[id]) {
+          const hotel = hotelsData[id];
+          container.innerHTML += `
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div class="relative">
+                <img src="${hotel.img}" alt="${hotel.name}" class="w-full h-48 object-cover">
+              </div>
+              <div class="p-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-1">${hotel.name}</h3>
+                <p class="text-sm text-gray-500 mb-4">${hotel.location}</p>
+                <div class="flex items-center space-x-2 mb-4">
+                  <div class="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full">${hotel.rating}</div>
+                  <span class="text-sm text-gray-600 font-medium">Đánh giá</span>
+                  <span class="text-sm text-gray-400">&bull; ${hotel.reviews}</span>
+                </div>
+                <p class="text-2xl font-bold text-gray-900">${hotel.price}</p>
+              </div>
+            </div>
+          `;
+        }
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", renderSavedHotels);
+  </script>
+<script>
+  function checkLoginStatus() {
+    const loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const userMenu = document.getElementById("userMenu");
+    if (loggedUser) {
+      // Đã đăng nhập
+      loginBtn.classList.add("hidden");
+      logoutBtn.classList.remove("hidden");
+      // Hiển thị tên user thay cho chữ "Khách hàng"
+    if (userMenu) {
+        userMenu.innerHTML = `Nguyễn Văn A <i class="fas fa-user ml-2"></i>`;
+    }
+    } else {
+      // Chưa đăng nhập
+      loginBtn.classList.remove("hidden");
+      logoutBtn.classList.add("hidden");
+   if (userMenu) {
+      userMenu.innerHTML = `Khách hàng <i class="fas fa-user ml-2"></i>`;
+    }
+  }
+}
+
+  // Xử lý logout
+  document.addEventListener("DOMContentLoaded", () => {
+    checkLoginStatus();
+
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        localStorage.removeItem("loggedUser");
+        window.location.href = "index.html"; // về trang chủ sau khi logout
+      });
+    }
+  });
+</script>
+
+</body>
+</html>

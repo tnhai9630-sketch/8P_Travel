@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thanh toán thành công</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f4f4f4;
+      padding: 50px;
+    }
+    .box {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      display: inline-block;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #28a745;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1 id="status-title">Thanh toán thành công!</h1>
+    <p id="status-text">Hệ thống đang chuyển bạn sang trang xác nhận đặt phòng...</p>
+    <button class="btn" id="go-confirm">Đi tới xác nhận</button>
+  </div>
+
+  <script>
+    // Lấy param từ URL (MoMo hoặc PayPal redirect kèm orderId, resultCode, message)
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get("orderId");
+    const resultCode = params.get("resultCode") || "0"; // giả định thành công nếu PayPal
+    const message = params.get("message");
+    const source = params.get("source") || "momo"; // momo hoặc paypal
+
+    // Lấy danh sách đặt phòng từ localStorage
+    let bookings = JSON.parse(localStorage.getItem("bookings")) || [];
+
+    function updateBookingStatus() {
+      let booking = null;
+
+      if (orderId) {
+        booking = bookings.find(b => b.orderId === orderId);
+      }
+      if (!booking && bookings.length > 0) {
+        booking = bookings[bookings.length - 1];
+      }
+
+      if (booking) {
+        if (resultCode === "0") {
+          booking.status = "Đã thanh toán";
+          booking.paymentMethod = source === "paypal" ? "PayPal" : "MoMo";
+          document.getElementById("status-title").textContent = "Thanh toán thành công!";
+          document.getElementById("status-text").textContent = "Hệ thống đang chuyển bạn sang trang xác nhận đặt phòng...";
+        } else {
+          booking.status = "Thanh toán thất bại";
+          document.getElementById("status-title").textContent = "Thanh toán thất bại!";
+          document.getElementById("status-text").textContent = message || "Giao dịch không thành công.";
+        }
+      }
+
+      localStorage.setItem("bookings", JSON.stringify(bookings));
+    }
+
+    // Cập nhật thông tin đặt phòng
+    updateBookingStatus();
+
+    // Nếu thanh toán thành công → tự động chuyển sau 3s
+    if (resultCode === "0") {
+      setTimeout(() => {
+        window.location.href = "xac-nhan-thanh-toan.html?source=" + source;
+      }, 3000);
+    }
+
+    // Nút chuyển ngay
+    document.getElementById("go-confirm").addEventListener("click", () => {
+      window.location.href = "xac-nhan-thanh-toan.html?source=" + source;
+    });
+
+    console.log("Params:", { orderId, resultCode, message, source });
+  </script>
+</body>
+</html>

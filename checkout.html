@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thanh toán - Demo</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding:20px; background:#f8f9fa; }
+    .checkout { max-width:500px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.1);}
+    h1 { text-align:center; color:#007bff; }
+    label { display:block; margin-top:10px; }
+    input[type="radio"] { margin-right:8px; }
+    .btn { background:#28a745; color:#fff; padding:10px; border:none; border-radius:5px; cursor:pointer; width:100%; margin-top:20px; }
+  </style>
+</head>
+<body>
+  <div class="checkout">
+    <h1>Thanh toán đơn hàng</h1>
+    <p><strong>Khách sạn:</strong> <span id="hotel-name">--</span></p>
+    <p><strong>Tổng tiền:</strong> <span id="total">0</span> VND</p>
+
+    <form id="paymentForm">
+      <label><input type="radio" name="payment" value="momo" required> Ví MoMo</label>
+      <label><input type="radio" name="payment" value="vnpay"> VNPay</label>
+      <button type="submit" class="btn">Thanh toán</button>
+    </form>
+  </div>
+
+  <script>
+    // Lấy dữ liệu từ localStorage
+    const hotel = localStorage.getItem("hotelName") || "Demo Hotel";
+    const total = parseInt(localStorage.getItem("total") || "100000");
+
+    document.getElementById("hotel-name").textContent = hotel;
+    document.getElementById("total").textContent = total.toLocaleString("vi-VN");
+
+    // Xử lý submit form
+    document.getElementById("paymentForm").addEventListener("submit", function(e){
+      e.preventDefault();
+      const payment = document.querySelector('input[name="payment"]:checked').value;
+
+      let apiUrl = payment==="momo" 
+        ? "http://localhost:3000/create-momo" 
+        : "http://localhost:3000/create-vnpay";
+
+      fetch(apiUrl,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ total })
+      })
+      .then(res=>res.json())
+      .then(data=>{
+        if(data.payUrl){ 
+          // VNPay trả về {payUrl: "..."} | MoMo cũng có payUrl
+          window.location.href = data.payUrl; 
+        } else if(data.shortLink){ 
+          // fallback MoMo
+          window.location.href = data.shortLink;
+        } else {
+          alert("Không nhận được link thanh toán.");
+          console.error(data);
+        }
+      })
+      .catch(err=>{
+        console.error("Lỗi:", err);
+        alert("Không kết nối được tới server!");
+      });
+    });
+  </script>
+</body>
+</html>

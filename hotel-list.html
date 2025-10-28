@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8P Travel - Khách sạn</title>
+    <!-- Thư viện Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Thư viện Flatpickr cho Date Picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* bg-slate-50 */
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .popup-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.3s ease-in-out;
+        }
+        .popup .close {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            font-size: 2rem;
+            line-height: 1;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+        .popup .close:hover {
+            color: #64748b;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        /* Style cho dropdown menu */
+        .dropdown-content {
+            display: none;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        #searchResultBox {
+            background-color: #fff;
+            color: #1f2937;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 1.5rem;
+            font-size: 1rem;
+            text-align: center;
+        }
+    </style>
+    <!-- Thư viện Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm py-4">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <div class="flex items-center space-x-2">
+                <!-- Sử dụng hình ảnh cho logo -->
+                <img src="assets/Layer_1.png" alt="8P Travel Logo" class="h-10 w-10">
+                <span class="text-2xl font-bold text-gray-800">8P Travel</span>
+            </div>
+            <nav>
+                <ul class="flex items-center space-x-6">
+                    <li><a href="index.html" class="text-gray-600 hover:text-blue-600 transition-colors">Trang chủ</a></li>
+                    <li><a href="hotel-list.html" class="text-gray-600 hover:text-blue-600 transition-colors">Khách sạn</a></li>
+                    <li class="dropdown relative">
+                        <a href="#" class="dropbtn text-gray-600 hover:text-blue-600 transition-colors flex items-center">
+                            Khách hàng <i class="fas fa-user ml-2"></i>
+                        </a>
+                        <div class="dropdown-content absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-20">
+                            <a href="saved-places.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Địa điểm đã lưu</a>
+                            <a href="bookings.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Chỗ đã đặt</a>
+                            <a href="trips.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Chuyến đi</a>
+                            <a href="#" id="logoutBtn" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hidden">Đăng xuất</a>
+                        </div>
+                    </li>
+                    <li><a href="#" id="loginBtn" class="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-colors">Đăng nhập</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Thanh tìm kiếm và bộ lọc -->
+    <section class="bg-white py-4 shadow-sm">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
+                <div class="flex-1 w-full">
+                    <input type="text" id="locationInput" placeholder="Thành phố Hồ Chí Minh, Việt Nam" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex-1 w-full flex items-center space-x-2">
+                    <input type="text" id="dateRangeInput" placeholder="Chọn ngày nhận phòng - trả phòng" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex-1 w-full flex items-center space-x-2">
+                    <input type="text" id="peopleInput" placeholder="2 người - 1 phòng" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button id="searchBtn" class="w-full md:w-auto bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                    Tìm kiếm
+                </button>
+            </div>
+            <!-- Hộp kết quả tìm kiếm -->
+            <div id="searchResultBox" class="hidden"></div>
+        </div>
+    </section>
+
+    <!-- Nội dung chính: Bộ lọc và danh sách khách sạn -->
+    <main class="container mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
+        
+        <!-- Cột bên trái: Bộ lọc -->
+        <aside class="lg:col-span-1 space-y-6">
+            <!-- Bản đồ -->
+            <div class="bg-white p-4 rounded-xl shadow-md">
+                <h3 class="font-bold text-lg mb-4">Ho Chi Minh City</h3>
+                <!-- Placeholder cho bản đồ -->
+                <div class="w-full h-48 bg-gray-200 rounded-xl flex items-center justify-center text-gray-500">
+                <img src="assets/Hồ chí minh.png" class="h-48 w-80">
+                </div>
+                <p class="text-sm text-gray-500 mt-2">1.758 chỗ nghỉ tại Thành phố Hồ Chí Minh</p>
+                <a href="#" class="text-blue-600 font-semibold text-sm mt-1 block">Xem trên bản đồ</a>
+            </div>
+
+            <!-- Các bộ lọc -->
+            <div class="bg-white p-4 rounded-xl shadow-md space-y-4">
+                <h3 class="font-bold text-lg">Bộ lọc</h3>
+                
+                <!-- Hạng sao -->
+                <div class="border-b pb-4">
+                    <h4 class="font-semibold text-gray-700 mb-2">Hạng sao</h4>
+                    <div class="flex items-center mb-1">
+                        <input type="checkbox" id="star-5" class="rounded text-blue-600 focus:ring-blue-500">
+                        <label for="star-5" class="ml-2 flex items-center">
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                        </label>
+                    </div>
+                    <div class="flex items-center mb-1">
+                        <input type="checkbox" id="star-4" class="rounded text-blue-600 focus:ring-blue-500">
+                        <label for="star-4" class="ml-2 flex items-center">
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                        </label>
+                    </div>
+                    <div class="flex items-center mb-1">
+                        <input type="checkbox" id="star-3" class="rounded text-blue-600 focus:ring-blue-500">
+                        <label for="star-3" class="ml-2 flex items-center">
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                            <i class="fas fa-star text-yellow-400"></i>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Tiện nghi -->
+                <div class="border-b pb-4">
+                    <h4 class="font-semibold text-gray-700 mb-2">Tiện nghi</h4>
+                    <div class="flex items-center mb-1">
+                        <input type="checkbox" id="amenity-wifi" class="rounded text-blue-600 focus:ring-blue-500">
+                        <label for="amenity-wifi" class="ml-2 text-gray-600">Wifi miễn phí</label>
+                    </div>
+                    <div class="flex items-center mb-1">
+                        <input type="checkbox" id="amenity-pool" class="rounded text-blue-600 focus:ring-blue-500">
+                        <label for="amenity-pool" class="ml-2 text-gray-600">Hồ bơi</label>
+                    </div>
+                    <div class="flex items-center mb-1">
+                        <input type="checkbox" id="amenity-parking" class="rounded text-blue-600 focus:ring-blue-500">
+                        <label for="amenity-parking" class="ml-2 text-gray-600">Chỗ đỗ xe</label>
+                    </div>
+                </div>
+
+                <!-- Điểm đánh giá -->
+                <div class="border-b pb-4">
+                    <h4 class="font-semibold text-gray-700 mb-2">Điểm đánh giá</h4>
+                    <div class="flex items-center mb-1">
+                        <input type="checkbox" id="rating-9" class="rounded text-blue-600 focus:ring-blue-500">
+                        <label for="rating-9" class="ml-2 text-gray-600">Tuyệt vời: 9+ điểm</label>
+                    </div>
+                    <div class="flex items-center mb-1">
+                        <input type="checkbox" id="rating-8" class="rounded text-blue-600 focus:ring-blue-500">
+                        <label for="rating-8" class="ml-2 text-gray-600">Rất tốt: 8+ điểm</label>
+                    </div>
+                    <div class="flex items-center mb-1">
+                        <input type="checkbox" id="rating-7" class="rounded text-blue-600 focus:ring-blue-500">
+                        <label for="rating-7" class="ml-2 text-gray-600">Tốt: 7+ điểm</label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button class="text-blue-600 font-semibold hover:underline">Xóa tất cả</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Cột bên phải: Danh sách khách sạn -->
+        <section class="lg:col-span-3">
+            <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+                <div class="flex items-center space-x-6 overflow-x-auto whitespace-nowrap">
+                    <h3 class="font-semibold text-gray-800">Sắp xếp theo:</h3>
+                    <div class="flex space-x-4">
+                        <button class="text-blue-600 font-semibold border-b-2 border-blue-600 pb-1 transition-colors">Phổ biến nhất</button>
+                        <button class="text-gray-600 hover:text-blue-600 transition-colors">Giá thấp nhất</button>
+                        <button class="text-gray-600 hover:text-blue-600 transition-colors">Gần nhất</button>
+                        <button class="text-gray-600 hover:text-blue-600 transition-colors">Đánh giá cao nhất</button>
+                        <button class="text-gray-600 hover:text-blue-600 transition-colors">Ưu đãi tốt nhất</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vùng chứa cho danh sách khách sạn động -->
+            <div id="hotelListContainer" class="space-y-6">
+                <div id="initialMessage" class="text-center text-gray-500 text-lg">
+                    Tìm kiếm khách sạn yêu thích của bạn!
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Popup Đăng nhập -->
+    <div id="loginPopup" class="popup">
+        <div class="popup-content">
+            <span class="close font-bold">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">Đăng nhập</h2>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label for="username" class="block text-gray-700 font-medium mb-1">Tên đăng nhập:</label>
+                    <input type="text" id="username" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="password" class="block text-gray-700 font-medium mb-1">Mật khẩu:</label>
+                    <input type="password" id="password" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-full font-semibold hover:bg-blue-700 transition-colors">Đăng nhập</button>
+            </form>
+            <div id="messageBox" class="text-center mt-4 hidden"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 py-8">
+        <div class="container mx-auto px-4 flex flex-col items-center text-center">
+            <div class="mb-4">
+                <h3 class="text-xl font-bold mb-2">8P Travel</h3>
+                <p class="text-sm">Trải nghiệm du lịch đẳng cấp, dễ dàng và đáng nhớ.</p>
+            </div>
+            <div class="flex flex-wrap justify-center space-x-6 mb-4">
+                <a href="#" class="hover:text-white transition-colors">Về chúng tôi</a>
+                <a href="#" class="hover:text-white transition-colors">Dịch vụ</a>
+                <a href="#" class="hover:text-white transition-colors">Liên hệ</a>
+                <a href="#" class="hover:text-white transition-colors">Chính sách bảo mật</a>
+            </div>
+            <div class="flex space-x-4 text-2xl mb-4">
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-facebook-square"></i></a>
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-instagram-square"></i></a>
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-twitter-square"></i></a>
+                <a href="#" class="fab fa-linkedin"></i></a>
+            </div>
+            <p class="text-sm">&copy; 2024 8P Travel. All rights reserved.</p>
+        </div>
+    </footer>
+
+
+    <!-- Script JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/vn.js"></script>
+    <script>
+        // Danh sách user demo
+        const users = [
+            { username: 'admin', password: '123456', fullname: 'Admin 8P' },
+            { username: 'user1', password: '111111', fullname: 'Nguyễn Văn A' },
+            { username: 'user2', password: '222222', fullname: 'Trần Thị B' }
+        ];
+
+        const loginBtn = document.getElementById('loginBtn');
+        const loginPopup = document.getElementById('loginPopup');
+        const closeBtn = document.querySelector('.popup .close');
+        const loginForm = document.getElementById('loginForm');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const dropdownBtn = document.querySelector('.dropbtn');
+        const messageBox = document.getElementById('messageBox');
+
+        // Thêm các biến mới cho các ô input và nút tìm kiếm
+        const locationInput = document.getElementById('locationInput');
+        const dateRangeInput = document.getElementById('dateRangeInput');
+        const peopleInput = document.getElementById('peopleInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const searchResultBox = document.getElementById('searchResultBox');
+        const hotelListContainer = document.getElementById('hotelListContainer');
+        const initialMessage = document.getElementById('initialMessage');
+
+        // Hiển thị thông báo (thay thế alert)
+        function showMessage(msg, type = 'success', boxId = 'messageBox') {
+            const box = document.getElementById(boxId);
+            box.textContent = msg;
+            box.classList.remove('hidden', 'text-green-500', 'text-red-500');
+            if (type === 'success') {
+                box.classList.add('text-green-500');
+            } else {
+                box.classList.add('text-red-500');
+            }
+        }
+
+        // Mở popup
+        loginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginPopup.style.display = 'block';
+            messageBox.classList.add('hidden');
+        });
+
+        // Đóng popup
+        closeBtn.addEventListener('click', () => loginPopup.style.display = 'none');
+        window.addEventListener('click', (e) => {
+            if (e.target === loginPopup) {
+                loginPopup.style.display = 'none';
+            }
+        });
+
+        // Cập nhật menu theo trạng thái đăng nhập
+        function updateMenu() {
+            const loggedUser = JSON.parse(localStorage.getItem('loggedUser'));
+            if (loggedUser) {
+                loginBtn.style.display = 'none';
+                logoutBtn.classList.remove('hidden');
+                dropdownBtn.innerHTML = `${loggedUser.fullname} <i class="fas fa-user ml-2"></i>`;
+            } else {
+                loginBtn.style.display = 'block';
+                logoutBtn.classList.add('hidden');
+                dropdownBtn.innerHTML = `Khách hàng <i class="fas fa-user ml-2"></i>`;
+            }
+        }
+
+        // Submit form đăng nhập
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const user = users.find(u => u.username === username && u.password === password);
+            if (user) {
+                showMessage(`Đăng nhập thành công! Xin chào ${user.fullname}`, 'success');
+                localStorage.setItem('loggedUser', JSON.stringify(user));
+                setTimeout(() => {
+                    loginPopup.style.display = 'none';
+                    updateMenu();
+                }, 1500);
+            } else {
+                showMessage('Tên đăng nhập hoặc mật khẩu sai', 'error');
+            }
+        });
+
+        // Đăng xuất
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('loggedUser');
+            showMessage('Đã đăng xuất', 'success');
+            setTimeout(() => {
+                    updateMenu();
+            }, 500);
+        });
+
+        // Load trang, cập nhật menu
+        updateMenu();
+
+        // Khởi tạo Flatpickr cho ô input chọn ngày
+        flatpickr("#dateRangeInput", {
+            mode: "range",
+            minDate: "today",
+            dateFormat: "d F", // d Thg m
+            "locale": "vn", // Sử dụng ngôn ngữ tiếng Việt
+            onClose: function(selectedDates, dateStr, instance) {
+                // Định dạng lại chuỗi ngày theo yêu cầu
+                if (selectedDates.length === 2) {
+                    const start = selectedDates[0];
+                    const end = selectedDates[1];
+                    const format = (date) => `${date.getDate()} Thg ${date.getMonth() + 1}`;
+                    instance.input.value = `${format(start)} - ${format(end)}`;
+                } else if (selectedDates.length === 1) {
+                    const format = (date) => `${date.getDate()} Thg ${date.getMonth() + 1}`;
+                    instance.input.value = format(selectedDates[0]);
+                }
+            }
+        });
+        
+        // Dữ liệu khách sạn mẫu
+           const hotelData = [
+             {
+                name: "GRAND HOTEL du LAC Boutique Saigon",
+                image: "assets/GRAND HOTEL du LAC Boutique Saigon.png",
+                distance: "40-42 Đường Phan Bội Châu 9, Quận 1, TP. Hồ Chí Minh, Việt Nam",
+                rating: "9.5",
+                ratingText: "Xuất sắc",
+                reviews: "289 đánh giá",
+                amenities: ["Đã bao gồm bữa sáng", "Hủy miễn phí trước 24 giờ", "Hồ bơi ngoài trời"],
+                oldPrice: "22.870.000 VND",
+                newPrice: "12.937.493 VND",
+            },
+            {
+                name: "Hotel Nikko Saigon",
+                image:"assets/Hotel Nikko Saigon.png",
+                distance: "5.5 km từ trung tâm",
+                rating: "9.1",
+                ratingText: "Xuất sắc",
+                reviews: "865 đánh giá",
+                amenities: ["Wifi miễn phí", "Hồ bơi ngoài trời"],
+                oldPrice: "9.123.000 VND",
+                newPrice: "8.632.758 VND",
+            },
+            {
+                name: "Liberty Central Saigon Citypoint",
+                image: "assets/Liberty Central Saigon Citypoint.png",
+                distance: "2.5 km từ Nhà hát lớn",
+                rating: "8.8",
+                ratingText: "Rất tốt",
+                reviews: "1150 đánh giá",
+                amenities: ["Hồ bơi", "Phòng gym"],
+                oldPrice: "2.500.000 VND",
+                newPrice: "2.100.000 VND",
+            }
+        ];
+
+        // Hàm tạo HTML cho một thẻ khách sạn
+        function createHotelCard(hotel) {
+            const amenitiesHtml = hotel.amenities.map(amenity => `
+                <p class="text-gray-600 text-sm mb-2"><i class="fas fa-check-circle text-green-500 mr-1"></i>${amenity}</p>
+            `).join('');
+
+            return `
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row">
+                    <!-- Ảnh khách sạn -->
+                    <div class="relative w-full md:w-1/3">
+                        <img src="${hotel.image}" alt="${hotel.name}" class="rounded-l-xl w-full h-full object-cover">
+                    <button class="save-btn absolute top-4 right-4 bg-white rounded-full w-10 h-10 flex 
+                        items-center justify-center shadow-lg text-gray-500 hover:text-red-500 hover:bg-gray-100 transition-colors"
+                        data-hotel='${JSON.stringify(hotel)}'>
+                         <i class="fas fa-heart"></i>
+                    </button>
+                    </div>
+                    <!-- Nội dung -->
+                    <div class="p-6 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-1">${hotel.name}</h3>
+                            <p class="text-sm text-gray-500 mb-2">${hotel.distance}</p>
+                            <div class="flex items-center space-x-2 mb-4">
+                                <div class="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full">${hotel.rating}</div>
+                                <span class="text-sm text-gray-600 font-medium">${hotel.ratingText}</span>
+                                <span class="text-sm text-gray-400">&bull; ${hotel.reviews}</span>
+                            </div>
+                            ${amenitiesHtml}
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <div class="text-right">
+                                <p class="text-sm text-gray-400 line-through">${hotel.oldPrice}</p>
+                                <p class="text-3xl font-bold text-red-600">${hotel.newPrice}</p>
+                            </div>
+                            <a href="hotel-detail.html?price=${hotel.newPrice.replace(/[^0-9]/g,'')}&name=${encodeURIComponent(hotel.name)}"
+   class="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors">
+   Chọn phòng
+</a>
+
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+// Hàm xử lý sự kiện lưu địa điểm
+function handleSavePlace() {
+    document.querySelectorAll(".save-btn").forEach(btn => {
+        btn.addEventListener("click", function () {
+            const hotel = JSON.parse(this.getAttribute("data-hotel"));
+
+            let savedHotels = JSON.parse(localStorage.getItem("savedHotels")) || [];
+
+            // Kiểm tra nếu đã có thì không thêm trùng
+            const exists = savedHotels.some(h => h.name === hotel.name);
+            if (!exists) {
+                savedHotels.push(hotel);
+                localStorage.setItem("savedHotels", JSON.stringify(savedHotels));
+                this.classList.add("text-red-500"); // đổi màu trái tim
+                alert(`Đã lưu: ${hotel.name}`);
+            } else {
+                // Nếu click lại thì xóa
+                savedHotels = savedHotels.filter(h => h.name !== hotel.name);
+                localStorage.setItem("savedHotels", JSON.stringify(savedHotels));
+                this.classList.remove("text-red-500");
+                alert(`Đã xóa khỏi lưu: ${hotel.name}`);
+            }
+        });
+    });
+}
+
+// Gọi lại sau khi render danh sách khách sạn
+function renderHotels(hotels) {
+    hotelListContainer.innerHTML = '';
+    if (hotels.length === 0) {
+        hotelListContainer.innerHTML = '<div class="text-center text-gray-500 text-lg">Không tìm thấy khách sạn nào phù hợp.</div>';
+    } else {
+        hotels.forEach(hotel => {
+            const hotelCardHtml = createHotelCard(hotel);
+            hotelListContainer.innerHTML += hotelCardHtml;
+        });
+        handleSavePlace(); // Gắn sự kiện cho nút trái tim
+    }
+}
+
+
+        // Xử lý sự kiện khi nút Tìm kiếm được nhấp
+        searchBtn.addEventListener('click', () => {
+            const location = locationInput.value;
+            const dates = dateRangeInput.value;
+            const people = peopleInput.value;
+            
+            initialMessage.style.display = 'none';
+
+            if (!location || !dates || !people) {
+                hotelListContainer.innerHTML = '<div class="text-center text-red-500 text-lg">Vui lòng điền đầy đủ thông tin tìm kiếm.</div>';
+            } else {
+                hotelListContainer.innerHTML = '<div class="text-center text-blue-600 text-lg">Đang tìm kiếm...</div>';
+                
+                // Mô phỏng tìm kiếm API
+                setTimeout(() => {
+                    // Cập nhật lại tiêu đề để phản ánh kết quả tìm kiếm
+                    const heading = document.querySelector('.lg\\:col-span-3 .font-bold');
+                    if (heading) {
+                        heading.textContent = `Các chỗ nghỉ tại ${location}`;
+                    }
+
+                    renderHotels(hotelData);
+                }, 1500); // 1.5 giây chờ
+            }
+        });
+    </script>
+</body>
+</html>

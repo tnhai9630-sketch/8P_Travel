@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8P Travel - Trang chủ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* bg-slate-50 */
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .popup-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.3s ease-in-out;
+        }
+        .popup .close {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            font-size: 2rem;
+            line-height: 1;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+        .popup .close:hover {
+            color: #64748b;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        /* Style cho dropdown menu */
+        .dropdown-content {
+            display: none;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50">
+
+    <header class="bg-white shadow-sm py-4">
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <div class="flex items-center space-x-2">
+                <img src="assets/Layer_1.png" alt="8P Travel Logo" class="h-10 w-10">
+                <span class="text-2xl font-bold text-gray-800">8P Travel</span>
+            </div>
+            <nav>
+                <ul class="flex items-center space-x-6">
+                    <li><a href="index.html" class="text-gray-600 hover:text-blue-600 transition-colors">Trang chủ</a></li>
+                    <li><a href="hotel-list.html" class="text-gray-600 hover:text-blue-600 transition-colors">Khách sạn</a></li>
+                <li>
+  <div class="relative">
+    <button id="userMenuBtn" class="flex items-center space-x-2 focus:outline-none dropbtn">
+      <span id="userName" class="text-gray-700 font-medium">Khách hàng</span>
+      <i class="fas fa-user ml-2 text-gray-600"></i>
+      <i class="fas fa-chevron-down text-gray-500 text-sm"></i>
+    </button>
+
+    <div id="userDropdown" class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-20 hidden">
+      <a href="saved-places.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Địa điểm đã lưu</a>
+      <a href="bookings.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Chỗ đã đặt</a>
+      <a href="thong-bao.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 relative" id="notifLink">
+    Thông báo
+    <span id="notifDot" class="absolute top-2 right-3 min-w-[18px] h-5 bg-red-500 text-white text-xs font-semibold flex items-center justify-center rounded-full hidden"></span>
+</a>
+      <a href="#" id="logoutBtn" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 hidden">Đăng xuất</a>
+    </div>
+  </div>
+</li>
+                    </li>
+                    <li><a href="#" id="loginBtn" class="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-colors">Đăng nhập</a></li>
+                </ul>
+            </nav>
+        </div>
+
+    </header>
+
+    <section class="relative py-20 md:py-32 rounded-b-3xl shadow-lg" style="background-image: url('assets/banner1.png'); background-size: cover; background-position: center;">
+        <div class="absolute inset-0 bg-black opacity-40 rounded-b-3xl"></div>
+        <div class="container mx-auto px-4 relative z-10 text-white text-center">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-4 animate-fade-in">Chào mừng bạn đến với 8P Travel</h1>
+            <p class="text-lg md:text-xl font-light mb-8 animate-fade-in-delay">Khám phá khách sạn, địa điểm và chuyến đi tuyệt vời</p>
+            <a href="hotel-list.html" class="inline-block bg-white text-blue-600 px-8 py-3 rounded-full font-semibold shadow-lg hover:bg-gray-200 transition-colors transform hover:scale-105">Khám phá ngay</a>
+        </div>
+    </section>
+
+    <main class="container mx-auto px-4 py-12">
+        <div class="grid md:grid-cols-3 gap-8 mt-12 mb-12">
+            <div class="bg-white p-6 rounded-2xl shadow-md text-center transform transition-transform hover:scale-105">
+                <i class="fas fa-bed text-5xl text-blue-500 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Đặt phòng dễ dàng</h3>
+                <p class="text-gray-500">Tìm kiếm và đặt phòng khách sạn phù hợp với bạn chỉ trong vài phút.</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-md text-center transform transition-transform hover:scale-105">
+                <i class="fas fa-map-marker-alt text-5xl text-blue-500 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Địa điểm phong phú</h3>
+                <p class="text-gray-500">Khám phá hàng ngàn địa điểm du lịch tuyệt vời trên khắp thế giới.</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-md text-center transform transition-transform hover:scale-105">
+                <i class="fas fa-calendar-check text-5xl text-blue-500 mb-4"></i>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Kế hoạch chuyến đi</h3>
+                <p class="text-gray-500">Tạo và quản lý các chuyến đi của bạn một cách khoa học và hiệu quả.</p>
+            </div>
+        </div>
+        
+        <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Khách sạn nổi bật</h2>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-transform hover:scale-105" data-hotel-id="mashpi-lodge">
+                <div class="relative">
+                    <img src="assets/Mashpi Lodge.png" alt="Mashpi Lodge" class="w-full h-48 object-cover">
+                    <button class="like-btn absolute top-4 right-4 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg text-gray-500 hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-1">Mashpi Lodge</h3>
+                    <p class="text-sm text-gray-500 mb-4">Quito, Ecuador</p>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full">9.0</div>
+                        <span class="text-sm text-gray-600 font-medium">Tuyệt vời</span>
+                        <span class="text-sm text-gray-400">&bull; 276 đánh giá</span>
+                     </div>
+                    <div class="bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded-full inline-block mb-2">Ưu đãi có thời hạn</div>
+                    <div class="flex items-baseline space-x-2">
+                        <p class="text-sm text-gray-400 line-through">15.683.000 VND</p>
+                        <p class="text-2xl font-bold text-red-600">8.968.000 VND</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-transform hover:scale-105" data-hotel-id="salana-boutique-hotel">
+                <div class="relative">
+                    <img src="assets/Salana Boutique Hotel (2).png" alt="Salana Boutique Hotel" class="w-full h-48 object-cover">
+                    <button class="like-btn absolute top-4 right-4 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg text-gray-500 hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-1">Salana Boutique Hotel</h3>
+                    <p class="text-sm text-gray-500 mb-4">Vientiane, Lào</p>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full">8.0</div>
+                        <span class="text-sm text-gray-600 font-medium">Rất tốt</span>
+                        <span class="text-sm text-gray-400">&bull; 372 đánh giá</span>
+                     </div>
+                    <div class="bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded-full inline-block mb-2">Ưu đãi có thời hạn</div>
+                    <div class="flex items-baseline space-x-2">
+                        <p class="text-sm text-gray-400 line-through">8.529.000 VND</p>
+                        <p class="text-2xl font-bold text-red-600">5.968.000 VND</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-transform hover:scale-105" data-hotel-id="nysa-hotel-bangkok">
+                <div class="relative">
+                    <img src="assets/NYSA HOTEL BANGKOK.png" alt="NYSA HOTEL BANGKOK" class="w-full h-48 object-cover">
+                    <button class="like-btn absolute top-4 right-4 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg text-gray-500 hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-1">NYSA HOTEL BANGKOK</h3>
+                    <p class="text-sm text-gray-500 mb-2">Bangkok, Thái Lan</p>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full">8.9</div>
+                        <span class="text-sm text-gray-600 font-medium">Xuất sắc</span>
+                        <span class="text-sm text-gray-400">&bull; 276 đánh giá</span>
+                    </div>
+                    <div class="bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded-full inline-block mb-2">Ưu đãi có thời hạn</div>
+                    <div class="flex items-baseline space-x-2">
+                        <p class="text-sm text-gray-400 line-through">4.786.000 VND</p>
+                        <p class="text-2xl font-bold text-red-600">2.968.000 VND</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-transform hover:scale-105" data-hotel-id="seaside-palm-beach">
+                <div class="relative">
+                    <img src="assets/Seaside Palm Beach.png" alt="Seaside Palm Beach Hotel" class="w-full h-48 object-cover">
+                    <button class="like-btn absolute top-4 right-4 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg text-gray-500 hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-1">Seaside Palm Beach Hotel</h3>
+                    <p class="text-sm text-gray-500 mb-2">Las Palmas, Tây Ban Nha</p>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full">7.8</div>
+                        <span class="text-sm text-gray-600 font-medium">Tốt</span>
+                        <span class="text-sm text-gray-400">&bull; 276 đánh giá</span>
+                    </div>
+                    <div class="bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded-full inline-block mb-2">Ưu đãi có thời hạn</div>
+                    <div class="flex items-baseline space-x-2">
+                        <p class="text-sm text-gray-400 line-through">2.789.000 VND</p>
+                        <p class="text-2xl font-bold text-red-600">1.635.000 VND</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-transform hover:scale-105" data-hotel-id="la-siesta-saigon">
+                <div class="relative">
+                    <img src="assets/La Siesta Premium Saigon Central.png" alt="Seaside Palm Beach Hotel" class="w-full h-48 object-cover">
+                    <button class="like-btn absolute top-4 right-4 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg text-gray-500 hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-1">La Siesta Premium Saigon Central</h3>
+                    <p class="text-sm text-gray-500 mb-2"> Quận 1, TP. Hồ Chí Minh, Việt Nam</p>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full">9.4</div>
+                        <span class="text-sm text-gray-600 font-medium">Tốt</span>
+                        <span class="text-sm text-gray-400">&bull; 1.095 đánh giá</span>
+                    </div>
+                    <div class="bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded-full inline-block mb-2">Ưu đãi có thời hạn</div>
+                    <div class="flex items-baseline space-x-2">
+                        <p class="text-sm text-gray-400 line-through">7.409.000 VND</p>
+                        <p class="text-2xl font-bold text-red-600">4.197.000 VND</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-transform hover:scale-105" data-hotel-id="lsignature-hotel-spa">
+                <div class="relative">
+                    <img src="assets/L'Signature Hotel & Spa.png" alt="Seaside Palm Beach Hotel" class="w-full h-48 object-cover">
+                    <button class="like-btn absolute top-4 right-4 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg text-gray-500 hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-1">L'Signature Hotel & Spa</h3>
+                    <p class="text-sm text-gray-500 mb-2">Quận Hoàn Kiếm, Hà Nội, Việt Nam</p>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full">9.7</div>
+                        <span class="text-sm text-gray-600 font-medium">Tốt</span>
+                        <span class="text-sm text-gray-400">&bull; 1.890 đánh giá</span>
+                    </div>
+                    <div class="bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded-full inline-block mb-2">Ưu đãi có thời hạn</div>
+                    <div class="flex items-baseline space-x-2">
+                        <p class="text-sm text-gray-400 line-through">13.486.000 VND</p>
+                        <p class="text-2xl font-bold text-red-600">8.461.000 VND</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="loginPopup" class="popup">
+        <div class="popup-content">
+            <span class="close font-bold">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">Đăng nhập</h2>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label for="username" class="block text-gray-700 font-medium mb-1">Tên đăng nhập:</label>
+                    <input type="text" id="username" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="password" class="block text-gray-700 font-medium mb-1">Mật khẩu:</label>
+                    <input type="password" id="password" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-full font-semibold hover:bg-blue-700 transition-colors">Đăng nhập</button>
+            </form>
+            <div id="messageBox" class="text-center mt-4 hidden"></div>
+        </div>
+    </div>
+
+    <footer class="bg-gray-800 text-gray-300 py-8">
+        <div class="container mx-auto px-4 flex flex-col items-center text-center">
+            <div class="mb-4">
+                <h3 class="text-xl font-bold mb-2">8P Travel</h3>
+                <p class="text-sm">Trải nghiệm du lịch đẳng cấp, dễ dàng và đáng nhớ.</p>
+            </div>
+            <div class="flex flex-wrap justify-center space-x-6 mb-4">
+                <a href="#" class="hover:text-white transition-colors">Về chúng tôi</a>
+                <a href="#" class="hover:text-white transition-colors">Dịch vụ</a>
+                <a href="#" class="hover:text-white transition-colors">Liên hệ</a>
+                <a href="#" class="hover:text-white transition-colors">Chính sách bảo mật</a>
+            </div>
+            <div class="flex space-x-4 text-2xl mb-4">
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-facebook-square"></i></a>
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-instagram-square"></i></a>
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-twitter-square"></i></a>
+                <a href="#" class="hover:text-white transition-colors"><i class="fab fa-linkedin"></i></a>
+            </div>
+            <p class="text-sm">&copy; 2024 8P Travel. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+
+const notifDot = document.getElementById('notifDot');
+
+function checkNotifications() {
+    const notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  if (unreadCount > 0) {
+      notifDot.textContent = unreadCount;
+      notifDot.classList.remove('hidden');
+  } else {
+      notifDot.classList.add('hidden');
+  }
+}
+
+// Khi click vào "Thông báo" => ẩn chấm đỏ (coi như đã xem)
+document.getElementById('notifLink').addEventListener('click', () => {
+  let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+  notifications = notifications.map(n => ({ ...n, read: true }));
+  localStorage.setItem('notifications', JSON.stringify(notifications));
+  notifDot.classList.add('hidden');
+});
+
+// Lắng nghe khi có thay đổi trong localStorage (ví dụ từ admin)
+window.addEventListener('storage', (event) => {
+  if (event.key === 'notifications') {
+      checkNotifications();
+  }
+});
+
+// Gọi hàm khi load trang
+document.addEventListener('DOMContentLoaded', checkNotifications);
+
+        // Danh sách user demo
+        const users = [
+            { username: 'admin', password: '123456', fullname: 'Admin 8P', role: 'admin' },
+            { username: 'user1', password: '111111', fullname: 'Nguyễn Văn A', role: 'user' },
+            { username: 'user2', password: '222222', fullname: 'Trần Thị B' , role: 'user'}
+        ];
+
+        const loginBtn = document.getElementById('loginBtn');
+        const loginPopup = document.getElementById('loginPopup');
+        const closeBtn = document.querySelector('.popup .close');
+        const loginForm = document.getElementById('loginForm');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const dropdownBtn = document.querySelector('.dropbtn');
+        const messageBox = document.getElementById('messageBox');
+
+        // Hiển thị thông báo (thay thế alert)
+        function showMessage(msg, type = 'success') {
+            messageBox.textContent = msg;
+            messageBox.classList.remove('hidden', 'text-green-500', 'text-red-500');
+            if (type === 'success') {
+                messageBox.classList.add('text-green-500');
+            } else {
+                messageBox.classList.add('text-red-500');
+            }
+            messageBox.style.display = 'block'; // Hiển thị messageBox
+            setTimeout(() => {
+                messageBox.style.display = 'none'; // Tự động ẩn sau 3 giây
+            }, 3000);
+        }
+
+        // Mở popup
+        loginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginPopup.style.display = 'block';
+            messageBox.classList.add('hidden');
+        });
+
+        // Đóng popup
+        closeBtn.addEventListener('click', () => loginPopup.style.display = 'none');
+        window.addEventListener('click', (e) => {
+            if (e.target === loginPopup) {
+                loginPopup.style.display = 'none';
+            }
+        });
+
+       function updateMenu() {
+    const loggedUser = JSON.parse(localStorage.getItem('loggedUser'));
+    if (loggedUser) {
+        loginBtn.style.display = 'none';
+        logoutBtn.classList.remove('hidden');
+        dropdownBtn.innerHTML = `<span class="capitalize">${loggedUser.fullname}</span> <i class="fas fa-user ml-2"></i>`;
+
+        // Nếu là admin thì chỉnh lại link "Chỗ đã đặt"
+        const bookingLink = document.querySelector("#userDropdown a[href='bookings.html']");
+        if (loggedUser.role === 'admin') {
+            bookingLink.setAttribute("href", "quan-ly-don-dat.html");
+            bookingLink.textContent = "Quản lý đơn đặt";
+        } else {
+            bookingLink.setAttribute("href", "bookings.html");
+            bookingLink.textContent = "Chỗ đã đặt";
+        }
+
+    } else {
+        loginBtn.style.display = 'block';
+        logoutBtn.classList.add('hidden');
+        dropdownBtn.innerHTML = `Khách hàng <i class="fas fa-user ml-2"></i>`;
+
+        // Reset link khi chưa đăng nhập
+        const bookingLink = document.querySelector("#userDropdown a[href]");
+        bookingLink.setAttribute("href", "bookings.html");
+        bookingLink.textContent = "Chỗ đã đặt";
+    }
+}
+
+        // Submit form đăng nhập
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const user = users.find(u => u.username === username && u.password === password);
+            if (user) {
+                showMessage(`Đăng nhập thành công! Xin chào ${user.fullname}`, 'success');
+                localStorage.setItem('loggedUser', JSON.stringify(user));
+                setTimeout(() => {
+                    loginPopup.style.display = 'none';
+                    updateMenu();
+            
+                }, 1000);
+            } else {
+                showMessage('Tên đăng nhập hoặc mật khẩu sai', 'error');
+            }
+        });
+
+        // Đăng xuất
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('loggedUser');
+            showMessage('Đã đăng xuất', 'success');
+            setTimeout(() => {
+                updateMenu();
+            }, 500);
+        });
+
+        // --- LOGIC LƯU KHÁCH SẠN ---
+        const savedHotelsKey = 'saved_hotels';
+
+        function getSavedHotels() {
+            try {
+                return JSON.parse(localStorage.getItem(savedHotelsKey)) || [];
+            } catch (e) {
+                console.error("Error parsing saved hotels from localStorage:", e);
+                return [];
+            }
+        }
+
+        function saveHotels(hotels) {
+            try {
+                localStorage.setItem(savedHotelsKey, JSON.stringify(hotels));
+            } catch (e) {
+                console.error("Error saving hotels to localStorage:", e);
+            }
+        }
+
+        // Sửa đổi hàm toggleSaved để nhận biểu tượng trái tim trực tiếp
+        function toggleSaved(hotelId, heartIconElement) {
+            const savedHotels = getSavedHotels();
+            const index = savedHotels.indexOf(hotelId);
+            const loggedUser = localStorage.getItem('loggedUser');
+
+            if (!loggedUser) {
+                showMessage('Vui lòng đăng nhập để lưu địa điểm.', 'error');
+                loginPopup.style.display = 'block';
+                return;
+            }
+
+            if (index > -1) {
+                // Đã lưu, bây giờ xóa
+                savedHotels.splice(index, 1);
+                heartIconElement.classList.remove('text-red-500');
+                heartIconElement.classList.add('text-gray-500');
+                showMessage(`Đã xóa khách sạn khỏi danh sách đã lưu.`, 'success');
+            } else {
+                // Chưa lưu, bây giờ thêm vào
+                savedHotels.push(hotelId);
+                heartIconElement.classList.remove('text-gray-500');
+                heartIconElement.classList.add('text-red-500');
+                showMessage(`Đã thêm khách sạn vào danh sách đã lưu.`, 'success');
+            }
+            saveHotels(savedHotels);
+        }
+
+        function updateSavedHotelsStatus() {
+            const savedHotels = getSavedHotels();
+            document.querySelectorAll('.like-btn').forEach(button => {
+                const hotelId = button.closest('[data-hotel-id]').dataset.hotelId;
+                const heartIcon = button.querySelector('i'); // Lấy thẻ <i>
+                if (savedHotels.includes(hotelId)) {
+                    heartIcon.classList.remove('text-gray-500');
+                    heartIcon.classList.add('text-red-500');
+                } else {
+                    heartIcon.classList.remove('text-red-500');
+                    heartIcon.classList.add('text-gray-500');
+                }
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            updateMenu(); // Cập nhật trạng thái menu khi tải trang
+            updateSavedHotelsStatus(); // Cập nhật trạng thái các nút trái tim khi tải trang
+
+            // Gán sự kiện cho các nút trái tim
+            document.querySelectorAll('.like-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault(); // Ngăn chặn hành động mặc định của nút
+
+                    const hotelId = button.closest('[data-hotel-id]').dataset.hotelId;
+                    const heartIcon = button.querySelector('i'); // Lấy thẻ <i> trực tiếp từ nút bấm
+                    
+                    toggleSaved(hotelId, heartIcon); // Truyền hotelId và thẻ <i> vào hàm
+                });
+            });
+        });
+    // Dropdown click thay cho hover
+const userMenuBtn = document.getElementById("userMenuBtn");
+const userDropdown = document.getElementById("userDropdown");
+
+userMenuBtn.addEventListener("click", (e) => {
+  e.stopPropagation(); // không bị đóng ngay khi click
+  userDropdown.classList.toggle("hidden");
+});
+
+document.addEventListener("click", (e) => {
+  if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) {
+    userDropdown.classList.add("hidden");
+  }
+});
+
+    </script>
+</body>
+</html>

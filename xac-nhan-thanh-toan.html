@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xác nhận thanh toán - 8P Travel</title>
+<style>
+body {
+  font-family: "Inter", sans-serif;
+  background: #f5f7fa;
+  padding: 30px;
+}
+.confirmation {
+  max-width: 700px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 15px;
+  padding: 30px 40px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.confirmation h1 {
+  text-align: center;
+  color: #007BFF;
+  margin-bottom: 20px;
+}
+.info {
+  margin-top: 15px;
+  line-height: 1.7;
+}
+.info p { margin: 8px 0; }
+strong { color: #333; }
+.highlight {
+  font-size: 1.1em;
+  color: #28a745;
+  font-weight: bold;
+}
+.btn {
+  display: block;
+  width: 100%;
+  background: #007BFF;
+  color: white;
+  padding: 12px;
+  text-align: center;
+  border-radius: 8px;
+  margin-top: 25px;
+  text-decoration: none;
+  font-weight: 600;
+}
+.btn:hover { background: #0056b3; }
+.divider {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 15px 0;
+}
+</style>
+</head>
+<body>
+
+<div class="confirmation">
+  <h1>✅ Xác nhận thanh toán thành công</h1>
+
+  <div class="info">
+    <p><strong>Mã đơn hàng:</strong> <span id="order-code"></span></p>
+    <p><strong>Khách hàng:</strong> <span id="fullname"></span></p>
+    <p><strong>Số điện thoại:</strong> <span id="phone"></span></p>
+
+    <div class="divider"></div>
+
+    <p><strong>Khách sạn:</strong> <span id="hotel"></span></p>
+    <p><strong>Ngày nhận phòng:</strong> <span id="checkin"></span></p>
+    <p><strong>Ngày trả phòng:</strong> <span id="checkout"></span></p>
+    <p><strong>Số lượng khách:</strong> <span id="guests"></span></p>
+
+    <div class="divider"></div>
+
+    <p><strong>Tổng tiền:</strong> <span id="total" class="highlight"></span></p>
+    <p><strong>Hình thức thanh toán:</strong> <span id="payment-method"></span></p>
+    <p><strong>Ngày tạo đơn:</strong> <span id="created-at"></span></p>
+  </div>
+
+  <a href="index.html" class="btn">Quay lại trang chủ</a>
+</div>
+
+<script>
+// ✅ Lấy dữ liệu đơn hàng từ localStorage
+const booking = JSON.parse(localStorage.getItem("currentBooking")) || {};
+const urlParams = new URLSearchParams(window.location.search);
+const source = urlParams.get("source"); // momo hoặc paypal
+// ✅ Xác định phương thức thanh toán
+let paymentMethod = booking.method || "-";
+if (source === "momo") paymentMethod = "MoMo";
+if (source === "paypal") paymentMethod = "PayPal";
+
+// ✅ Điền thông tin ra trang
+document.getElementById("order-code").textContent = booking.code || "-";
+document.getElementById("fullname").textContent   = booking.fullname || "-";
+document.getElementById("phone").textContent      = booking.phone || "-";
+document.getElementById("hotel").textContent      = booking.hotel || "-";
+document.getElementById("checkin").textContent    = booking.checkIn || "-";
+document.getElementById("checkout").textContent   = booking.checkOut || "-";
+document.getElementById("guests").textContent     = booking.guests || "-";
+document.getElementById("total").textContent      = (booking.total || 0).toLocaleString("vi-VN") + "đ";
+document.getElementById("payment-method"). textContent = paymentMethod ||paymentMethod;
+document.getElementById("created-at").textContent = booking.createdAt || new Date().toLocaleString("vi-VN");
+
+// ✅ Nếu không có booking (vào nhầm), quay về trang chủ
+if (!booking.fullname) {
+  alert("Không tìm thấy thông tin đơn hàng. Vui lòng đặt lại.");
+  window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>

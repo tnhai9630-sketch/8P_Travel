@@ -1,0 +1,41 @@
+{
+  "name": "web-booking-khach-san",
+  "version": "1.0.0",
+  "description": "Website đặt phòng khách sạn với tích hợp thanh toán MoMo",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "paypal": "node app.js"
+  },
+  "keywords": [
+    "hotel",
+    "booking",
+    "payment",
+    "momo"
+  ],
+  "author": "Tran Thi Nhai",
+  "license": "ISC",
+  "dependencies": {
+    "@paypal/checkout-server-sdk": "^1.0.3",
+    "axios": "^1.12.2",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "localtunnel": "^2.0.2",
+    "paypal-rest-sdk": "^1.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tnhai9630-sketch/Web-Booking-khach-san.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tnhai9630-sketch/Web-Booking-khach-san/issues"
+  },
+  "homepage": "https://github.com/tnhai9630-sketch/Web-Booking-khach-san#readme"
+}

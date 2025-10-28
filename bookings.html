@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Danh sách đặt chỗ - 8P Travel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-4 sm:p-6">
+  <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-4 sm:p-6 overflow-x-auto">
+  <h1 class="text-2xl sm:text-3xl font-bold mb-4 text-center sm:text-left">Danh sách đặt chỗ</h1>
+
+  <!-- Bộ lọc -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+    <div>
+      <label class="font-semibold mr-2">Nguồn:</label>
+      <select id="filter-source" class="border border-gray-300 rounded px-2 py-1">
+        <option value="all">Tất cả</option>
+        <option value="Bank">Bank</option>
+        <option value="MoMo">MoMo</option>
+        <option value="PayPal">PayPal</option>
+      </select>
+    </div>
+    <div>
+      <label class="font-semibold mr-2">Trạng thái:</label>
+      <select id="filter-status" class="border border-gray-300 rounded px-2 py-1">
+        <option value="all">Tất cả</option>
+        <option value="Chờ thanh toán">Chờ thanh toán</option>
+        <option value="Đã thanh toán">Đã thanh toán</option>
+        <option value="Hủy">Hủy</option>
+      </select>
+    </div>
+  </div>
+
+  <table class="min-w-full border-collapse border border-gray-300 text-sm sm:text-base">
+    <thead class="bg-blue-600 text-white">
+      <tr>
+        <th class="border border-gray-300 px-2 sm:px-4 py-2">Mã đơn</th>
+        <th class="border border-gray-300 px-2 sm:px-4 py-2">Khách sạn</th>
+        <th class="border border-gray-300 px-2 sm:px-4 py-2">Ngày nhận</th>
+        <th class="border border-gray-300 px-2 sm:px-4 py-2">Ngày trả</th>
+        <th class="border border-gray-300 px-2 sm:px-4 py-2">Khách</th>
+        <th class="border border-gray-300 px-2 sm:px-4 py-2">Họ tên</th>
+        <th class="border border-gray-300 px-2 sm:px-4 py-2">Tổng tiền</th>
+        <th class="border border-gray-300 px-2 sm:px-4 py-2">Trạng thái</th>
+        <th class="border border-gray-300 px-2 sm:px-4 py-2">Thời gian</th>
+        <th class="border border-gray-300 px-2 sm:px-4 py-2">Nguồn</th>
+      </tr>
+    </thead>
+    <tbody id="booking-list"></tbody>
+  </table>
+</div>
+
+<script>
+// ✅ Tự động xác định nguồn thanh toán
+function autoDetectSource(bookings) {
+  bookings.forEach(b => {
+    const code = (b.code || "").toUpperCase();
+    if (!b.source || !["bank", "momo", "paypal"].includes(b.source.toLowerCase())) {
+      if (code.startsWith("BOOKM")) b.source = "MoMo";
+      else if (code.startsWith("BOOKP")) b.source = "PayPal";
+      else b.source = "Bank";
+    }
+  });
+  return bookings;
+}
+
+// ✅ Tạo hàng hiển thị
+function addRow(b) {
+  const tbody = document.getElementById("booking-list");
+  let statusHTML = "";
+
+  if (b.status === "Đã thanh toán") 
+    statusHTML = `<span class="text-green-600 font-semibold">${b.status}</span>`;
+  else if (b.status === "Chờ thanh toán") 
+    statusHTML = `<span class="text-pink-600 font-semibold">${b.status}</span>`;
+  else if (b.status === "Hủy") 
+    statusHTML = `<span class="text-red-600 font-semibold">${b.status}</span>`;
+  else 
+    statusHTML = `<span class="text-gray-600">${b.status || "--"}</span>`;
+
+  const tr = document.createElement("tr");
+  tr.className = "hover:bg-gray-100";
+  tr.innerHTML = `
+    <td class="border border-gray-300 px-2 sm:px-4 py-1 text-center">${b.code || "--"}</td>
+    <td class="border border-gray-300 px-2 sm:px-4 py-1 text-center">${b.hotel || "--"}</td>
+    <td class="border border-gray-300 px-2 sm:px-4 py-1 text-center">${b.checkIn || "--"}</td>
+    <td class="border border-gray-300 px-2 sm:px-4 py-1 text-center">${b.checkOut || "--"}</td>
+    <td class="border border-gray-300 px-2 sm:px-4 py-1 text-center">${b.guests || "--"}</td>
+    <td class="border border-gray-300 px-2 sm:px-4 py-1 text-center">${b.fullname || "--"}</td>
+    <td class="border border-gray-300 px-2 sm:px-4 py-1 text-center">${Number(b.total || 0).toLocaleString("vi-VN")}đ</td>
+    <td class="border border-gray-300 px-2 sm:px-4 py-1 text-center">${statusHTML}</td>
+    <td class="border border-gray-300 px-2 sm:px-4 py-1 text-center">${b.createdAt || "--"}</td>
+    <td class="border border-gray-300 px-2 sm:px-4 py-1 text-center">${b.method || "--"}</td>
+  `;
+  tbody.appendChild(tr);
+}
+
+// ✅ Lấy danh sách bookings từ localStorage
+function renderBookings() {
+  const tbody = document.getElementById("booking-list");
+  tbody.innerHTML = "";
+
+  let bookings = JSON.parse(localStorage.getItem("bookings")) || [];
+
+  // Tự động xác định nguồn (MoMo / PayPal / Bank)
+  bookings = autoDetectSource(bookings);
+
+// ✅ Với MoMo hoặc PayPal, luôn là "Đã thanh toán"
+  bookings.forEach(b => {
+    const src = (b.method || b.source || "").toLowerCase();
+    if (src.includes("momo") || src.includes("paypal")) {
+      b.status = "Đã thanh toán";
+    }
+  });
+
+  // Sắp xếp theo thời gian mới nhất
+  bookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  // ✅ Cập nhật lại localStorage để lưu trạng thái mới
+  localStorage.setItem("bookings", JSON.stringify(bookings));
+  
+  // Lưu lại toàn cục để lọc
+  window.allBookings = bookings;
+  applyFilter();
+}
+
+// ✅ Lọc dữ liệu theo bộ lọc
+function applyFilter() {
+  const sourceFilter = document.getElementById("filter-source").value;
+  const statusFilter = document.getElementById("filter-status").value;
+  const tbody = document.getElementById("booking-list");
+  tbody.innerHTML = "";
+
+  window.allBookings.forEach(b => {
+    const sourceMatch = sourceFilter === "all" || b.method === sourceFilter;
+    const statusMatch = statusFilter === "all" || b.status === statusFilter;
+    if (sourceMatch && statusMatch) addRow(b);
+  });
+}
+
+// ✅ Sự kiện
+document.getElementById("filter-source").addEventListener("change", applyFilter);
+document.getElementById("filter-status").addEventListener("change", applyFilter);
+document.addEventListener("DOMContentLoaded", renderBookings);
+</script>
+
+</body>
+</html>
