@@ -55,7 +55,7 @@ button.statusBtn:hover { background-color: #2563EB; }
 
         <select id="filterStatus" class="border rounded px-3 py-2">
             <option value="all">Tất cả trạng thái</option>
-            <option value="Chờ thanh toán">Chờ thanh toán</option>
+            <option value="Chờ xác nhận">Chờ xác nhận</option>
             <option value="Đã thanh toán">Đã thanh toán</option>
             <option value="Thanh toán PayPal thất bại">Thanh toán thất bại</option>
         </select>
@@ -150,7 +150,7 @@ function addRow(booking, index) {
     const tbody = document.getElementById("booking-list");
     let statusClass = "text-gray-600";
     if (booking.status === "Đã thanh toán") statusClass = "text-green-600 font-semibold";
-    if (booking.status === "Chờ thanh toán") statusClass = "text-pink-600 font-semibold";
+    if (booking.status === "Chờ xác nhận") statusClass = "text-pink-600 font-semibold";
     if (booking.status === "Thanh toán PayPal thất bại") statusClass = "text-red-600 font-semibold";
 
     const tr = document.createElement("tr");
@@ -209,7 +209,7 @@ function renderBookings() {
 // Xác nhận thanh toán
 function confirmPayment(index){
     const booking = window.allBookings[index];
-    if(booking.status === "Chờ thanh toán") {
+    if(booking.status === "Chờ xác nhận") {
         booking.status = "Đã thanh toán";
         // Cập nhật localStorage nếu là Bank
         let localBookings = JSON.parse(localStorage.getItem("bookings")) || [];
@@ -258,3 +258,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 </body>
 
 </html>
+
