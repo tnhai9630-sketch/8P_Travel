@@ -25,7 +25,7 @@
       <label class="font-semibold mr-2">Trạng thái:</label>
       <select id="filter-status" class="border border-gray-300 rounded px-2 py-1">
         <option value="all">Tất cả</option>
-        <option value="Chờ thanh toán">Chờ thanh toán</option>
+        <option value="Chờ xác nhận">Chờ xác nhận</option>
         <option value="Đã thanh toán">Đã thanh toán</option>
         <option value="Hủy">Hủy</option>
       </select>
@@ -72,7 +72,7 @@ function addRow(b) {
 
   if (b.status === "Đã thanh toán") 
     statusHTML = `<span class="text-green-600 font-semibold">${b.status}</span>`;
-  else if (b.status === "Chờ thanh toán") 
+  else if (b.status === "Chờ xác nhận") 
     statusHTML = `<span class="text-pink-600 font-semibold">${b.status}</span>`;
   else if (b.status === "Hủy") 
     statusHTML = `<span class="text-red-600 font-semibold">${b.status}</span>`;
@@ -147,3 +147,4 @@ document.addEventListener("DOMContentLoaded", renderBookings);
 
 </body>
 </html>
+
