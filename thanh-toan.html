@@ -150,7 +150,7 @@ document.getElementById("paymentForm").addEventListener("submit", function(e){
         phone: document.querySelector('input[name="phone"]').value,
         total: total,
         method: methodDisplay,
-        status: payment==="bank" ? "Chờ thanh toán" : "Đang xử lý...", 
+        status: payment==="bank" ? "Chờ xác nhận" : "Đang xử lý...", 
         createdAt: new Date().toLocaleString("vi-VN")
     };
     
@@ -287,3 +287,4 @@ document.getElementById("paymentForm").addEventListener("submit", function(e){
 
 </body>
 </html>
+
